@@ -42,11 +42,20 @@ namespace TodoApp.Controllers
 
         // POST: api/TodoItems
         [HttpPost]
-        public async Task<ActionResult<TodoItem>> PostTodoItem(TodoItem todoItem)
+        public async Task<ActionResult<TodoItem>> PostTodoItem(TodoItemNew todoItemNew)
         {
+            // todoItenNew has no id. Map the props it does have to a ToDoItem type object
+            var todoItem = new TodoItem
+            {
+                Title = todoItemNew.Title,
+                IsCompleted = todoItemNew.IsCompleted
+            };
+
+            // id is Identity column in the database... 
             _context.TodoItems.Add(todoItem);
             await _context.SaveChangesAsync();
 
+            // so the success message will be returned with the id
             return CreatedAtAction(nameof(GetTodoItem), new { id = todoItem.Id }, todoItem);
         }
 
@@ -59,7 +68,15 @@ namespace TodoApp.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(todoItem).State = EntityState.Modified;
+            var existingItem = await _context.TodoItems.FindAsync(id);
+            if (existingItem == null)
+            {
+                return NotFound();
+            }
+
+            // Update only the fields that should be modified
+            existingItem.Title = todoItem.Title;
+            existingItem.IsCompleted = todoItem.IsCompleted;
 
             try
             {
@@ -79,6 +96,7 @@ namespace TodoApp.Controllers
 
             return NoContent();
         }
+
 
         // DELETE: api/TodoItems/5
         [HttpDelete("{id}")]
