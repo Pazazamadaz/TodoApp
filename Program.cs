@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Authentication;
+using TodoApp.Authentication;
+using TodoApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +28,17 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Add authentication services
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = "Basic";
+    options.DefaultChallengeScheme = "Basic";
+})
+.AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("Basic", null);
+
+builder.Services.AddScoped<IUserService, UserService>();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -36,11 +50,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-//app.UseAuthorization();
+// Add Authentication Middleware
+app.UseAuthentication();
+
+// Uncomment authorization when required
+// app.UseAuthorization();
 
 app.UseCors("AllowAllOrigins");
 
 app.MapControllers();
 
 app.Run();
-
