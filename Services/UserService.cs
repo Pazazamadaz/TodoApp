@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using TodoApp.Services;
 using TodoApp.Dtos;
+using Microsoft.AspNetCore.Mvc;
 
 public class UserService : IUserService
 {
@@ -36,7 +37,7 @@ public class UserService : IUserService
         // Check if the username is already taken
         if (await _context.Users.AnyAsync(x => x.Username == registrationDto.Username))
         {
-            return null; // Username already taken
+            return null;
         }
 
         // Create a new user object

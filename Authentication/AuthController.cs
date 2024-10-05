@@ -24,17 +24,20 @@ namespace TodoApp.Authentication
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] UserRegisterDto userRegistration)
+        public async Task<IActionResult> Register([FromBody] UserRegisterDto registration)
         {
-            try
+            if (string.IsNullOrWhiteSpace(registration.Password))
             {
-                await _userService.Register(userRegistration);
-                return Ok("User registered successfully");
+                return BadRequest("Password cannot be empty.");
             }
-            catch (Exception ex)
+
+            var user = await _userService.Register(registration);
+            if (user == null)
             {
-                return BadRequest(ex.Message);
+                return BadRequest("Invalid registration.");
             }
+
+            return Ok("User registered successfully");
         }
 
         [HttpPost("login")]
