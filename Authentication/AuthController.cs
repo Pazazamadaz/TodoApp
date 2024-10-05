@@ -50,10 +50,7 @@ namespace TodoApp.Authentication
                 }
                 else
                 {
-                    return new UnauthorizedResult()
-                    {
-
-                    };
+                    return new UnauthorizedResult();
                 }
             }
             catch (Exception ex)
