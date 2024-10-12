@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using TodoApp.Data;
 using TodoApp.Models;
@@ -46,9 +47,15 @@ namespace TodoApp.Controllers
         [HttpPost]
         public async Task<ActionResult<TodoItem>> PostTodoItem(TodoItemNew todoItemNew)
         {
+            // Retreive user id
+            int userId = _context.Users
+                .Where(u => u.Username == User.FindFirstValue(ClaimTypes.Name))
+                .Select(u => u.Id)
+                .FirstOrDefault();
             // todoItenNew has no id. Map the props it does have to a ToDoItem type object
             var todoItem = new TodoItem
             {
+                UserId = userId,
                 Title = todoItemNew.Title,
                 IsCompleted = todoItemNew.IsCompleted
             };

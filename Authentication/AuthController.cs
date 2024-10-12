@@ -59,9 +59,6 @@ namespace TodoApp.Authentication
                     return Unauthorized("Invalid username or password.");
                 }
 
-                // Generate JWT token
-                //var token = GenerateJwtToken(user);
-                //return Ok(new { Token = token });
                 return Ok(new { Token = userToken });
             }
             catch (Exception ex)

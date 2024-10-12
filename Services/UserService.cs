@@ -71,12 +71,12 @@ public class UserService : IUserService
             new Claim(ClaimTypes.Name, user.Username) // Add claims here as needed
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"]));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
+            issuer: _configuration["JwtSettings:Issuer"],
+            audience: _configuration["JwtSettings:Audience"],
             claims: claims,
             expires: DateTime.Now.AddMinutes(30), // Token expiration time
             signingCredentials: creds);
@@ -108,6 +108,6 @@ public class UserService : IUserService
                 }
             }
         }
-        return true; // Password verification successful
+        return true;
     }
 }

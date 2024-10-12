@@ -49,9 +49,9 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = "YourIssuer", // Set your valid issuer
-        ValidAudience = "YourAudience", // Set your valid audience
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("YourSecretKey")) // Replace with your secret key
+        ValidIssuer = issuer,
+        ValidAudience = audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)) // Replace with your secret key
     };
 });
 
@@ -66,13 +66,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.UseCors("AllowAllOrigins");
 
 // Add Authentication Middleware
 app.UseAuthentication();
-app.UseAuthorization(); // Uncomment to enable authorization
-
-app.UseCors("AllowAllOrigins");
+app.UseAuthorization();
 
 app.MapControllers();
 
