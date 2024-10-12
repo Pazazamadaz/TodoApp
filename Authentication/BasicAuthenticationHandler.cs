@@ -9,20 +9,26 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using System.Net.Http.Headers;
 using TodoApp.Services;
+using Microsoft.EntityFrameworkCore;
+using TodoApp.Data;
 
 public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
     private readonly IUserService _userService;
+    private readonly AppDbContext _context;
 
     public BasicAuthenticationHandler(
         IOptionsMonitor<AuthenticationSchemeOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder,
         ISystemClock clock,
-        IUserService userService)
+        IUserService userService,
+        AppDbContext context
+        )
         : base(options, logger, encoder, clock)
     {
         _userService = userService;
+        _context = context;
     }
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -38,16 +44,22 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
             var username = credentials[0];
             var password = credentials[1];
 
-            // Validate the user using the user service
-            var user = await _userService.Authenticate(username, password);
+            // Authenticate the user and get the JWT token
+            var token = await _userService.Authenticate(username, password);
 
-            if (user == null)
+            if (token == null)
                 return AuthenticateResult.Fail("Invalid Username or Password");
 
-            // If successful, create the claims and the identity
+            // Query the user from the database
+            var user = await _context.Users.SingleOrDefaultAsync(x => x.Username == username);
+
+            if (user == null)
+                return AuthenticateResult.Fail("User not found");
+
+            // Create claims based on the user's information
             var claims = new[] {
-                new Claim(ClaimTypes.Name, user.Username) // Store the username in the Name claim
-            };
+            new Claim(ClaimTypes.Name, user.Username)
+        };
             var identity = new ClaimsIdentity(claims, Scheme.Name);
             var principal = new ClaimsPrincipal(identity);
             var ticket = new AuthenticationTicket(principal, Scheme.Name);
@@ -59,4 +71,5 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
             return AuthenticateResult.Fail("Invalid Authorization Header");
         }
     }
+
 }

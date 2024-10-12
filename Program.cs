@@ -4,8 +4,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Authentication;
-using TodoApp.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using TodoApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,16 +29,33 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// TODO: extract into separate class
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var issuer = jwtSettings["Issuer"];
+var audience = jwtSettings["Audience"];
+var secretKey = jwtSettings["SecretKey"];
+
 // Add authentication services
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = "Basic";
-    options.DefaultChallengeScheme = "Basic";
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-.AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("Basic", null);
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = "YourIssuer", // Set your valid issuer
+        ValidAudience = "YourAudience", // Set your valid audience
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("YourSecretKey")) // Replace with your secret key
+    };
+});
 
 builder.Services.AddScoped<IUserService, UserService>();
-
 
 var app = builder.Build();
 
@@ -52,9 +70,7 @@ app.UseHttpsRedirection();
 
 // Add Authentication Middleware
 app.UseAuthentication();
-
-// Uncomment authorization when required
-// app.UseAuthorization();
+app.UseAuthorization(); // Uncomment to enable authorization
 
 app.UseCors("AllowAllOrigins");
 

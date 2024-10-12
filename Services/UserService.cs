@@ -1,23 +1,29 @@
-﻿using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using TodoApp.Data;
-using TodoApp.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using TodoApp.Services;
+using System.Threading.Tasks;
+using TodoApp.Data;
 using TodoApp.Dtos;
-using Microsoft.AspNetCore.Mvc;
+using TodoApp.Models;
+using TodoApp.Services;
 
 public class UserService : IUserService
 {
     private readonly AppDbContext _context;
+    private readonly IConfiguration _configuration;
 
-    public UserService(AppDbContext context)
+    public UserService(AppDbContext context, IConfiguration configuration)
     {
         _context = context;
+        _configuration = configuration;
     }
 
-    public async Task<User> Authenticate(string username, string password)
+    public async Task<string> Authenticate(string username, string password)
     {
         // Retrieve the user from the database
         var user = await _context.Users.SingleOrDefaultAsync(x => x.Username == username);
@@ -25,11 +31,11 @@ public class UserService : IUserService
         // Check if the user exists and verify the password
         if (user == null || !VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
         {
-            return null;
+            return null; // Authentication failed
         }
 
-        // Authentication successful, return the user
-        return user;
+        // Authentication successful, generate JWT token
+        return GenerateJwtToken(user);
     }
 
     public async Task<User> Register(UserRegisterDto registrationDto)
@@ -37,7 +43,7 @@ public class UserService : IUserService
         // Check if the username is already taken
         if (await _context.Users.AnyAsync(x => x.Username == registrationDto.Username))
         {
-            return null;
+            return null; // Username already taken
         }
 
         // Create a new user object
@@ -54,11 +60,32 @@ public class UserService : IUserService
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        return user;
+        return user; // Return the newly created user
+    }
+
+    // Method to generate JWT token
+    public string GenerateJwtToken(User user)
+    {
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.Name, user.Username) // Add claims here as needed
+        };
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: _configuration["Jwt:Issuer"],
+            audience: _configuration["Jwt:Audience"],
+            claims: claims,
+            expires: DateTime.Now.AddMinutes(30), // Token expiration time
+            signingCredentials: creds);
+
+        return new JwtSecurityTokenHandler().WriteToken(token); // Return the token as a string
     }
 
     // Helper method to create the password hash and salt
-    private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+    public void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
     {
         using (var hmac = new HMACSHA512())
         {
@@ -68,7 +95,7 @@ public class UserService : IUserService
     }
 
     // Helper method to verify the password hash
-    private bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
+    public bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
     {
         using (var hmac = new HMACSHA512(storedSalt))
         {
@@ -81,6 +108,6 @@ public class UserService : IUserService
                 }
             }
         }
-        return true;
+        return true; // Password verification successful
     }
 }

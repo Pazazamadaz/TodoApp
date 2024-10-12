@@ -1,14 +1,14 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Security.Cryptography;
-using System.Text;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using TodoApp.Data;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using System.Text;
 using TodoApp.Dtos;
 using TodoApp.Models;
 using TodoApp.Services;
+using Microsoft.Extensions.Configuration;
+using System.IdentityModel.Tokens.Jwt;
+using System;
 
 namespace TodoApp.Authentication
 {
@@ -17,10 +17,17 @@ namespace TodoApp.Authentication
     public class AuthController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly string _issuer;
+        private readonly string _audience;
+        private readonly string _secretKey;
 
-        public AuthController(IUserService userService)
+        public AuthController(IUserService userService, IConfiguration configuration)
         {
             _userService = userService;
+            var jwtSettings = configuration.GetSection("JwtSettings");
+            _issuer = jwtSettings["Issuer"];
+            _audience = jwtSettings["Audience"];
+            _secretKey = jwtSettings["SecretKey"];
         }
 
         [HttpPost("register")]
@@ -45,22 +52,42 @@ namespace TodoApp.Authentication
         {
             try
             {
-                var token = await _userService.Authenticate(login.Username, login.Password);
+                var userToken = await _userService.Authenticate(login.Username, login.Password);
 
-                if (token != null)
+                if (userToken == null)
                 {
-                    return Ok(new { Token = token });
+                    return Unauthorized("Invalid username or password.");
                 }
-                else
-                {
-                    return new UnauthorizedResult();
-                }
+
+                // Generate JWT token
+                //var token = GenerateJwtToken(user);
+                //return Ok(new { Token = token });
+                return Ok(new { Token = userToken });
             }
             catch (Exception ex)
             {
                 return Unauthorized(ex.Message);
             }
         }
-    }
 
+        private string GenerateJwtToken(User user)
+        {
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Name, user.Username)
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _issuer,
+                audience: _audience,
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(30),
+                signingCredentials: creds);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+    }
 }
