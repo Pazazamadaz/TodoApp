@@ -26,7 +26,28 @@ namespace TodoApp.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
         {
-            return await _context.TodoItems.ToListAsync();
+            // Extract the username from the JWT token
+            var username = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("User information is missing.");
+            }
+
+            // Retrieve the user based on the username
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+
+            if (user == null)
+            {
+                return Unauthorized("User not found.");
+            }
+
+            // Filter TodoItems by the UserId
+            var userTodoItems = await _context.TodoItems
+                                              .Where(item => item.UserId == user.Id)
+                                              .ToListAsync();
+
+            return userTodoItems;
         }
 
         // GET: api/TodoItems/5
@@ -48,14 +69,13 @@ namespace TodoApp.Controllers
         public async Task<ActionResult<TodoItem>> PostTodoItem(TodoItemNew todoItemNew)
         {
             // Retreive user id
-            int userId = _context.Users
+            User user = _context.Users
                 .Where(u => u.Username == User.FindFirstValue(ClaimTypes.Name))
-                .Select(u => u.Id)
                 .FirstOrDefault();
             // todoItenNew has no id. Map the props it does have to a ToDoItem type object
             var todoItem = new TodoItem
             {
-                UserId = userId,
+                UserId = user.Id,
                 Title = todoItemNew.Title,
                 IsCompleted = todoItemNew.IsCompleted
             };
@@ -69,21 +89,46 @@ namespace TodoApp.Controllers
         }
 
         // PUT: api/TodoItems/5
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTodoItem(int id, TodoItem todoItem)
         {
+            // Check if the ID in the request matches the TodoItem's ID
             if (id != todoItem.Id)
             {
                 return BadRequest();
             }
 
+            // Extract the username from the JWT token
+            var username = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("User information is missing.");
+            }
+
+            // Retrieve the user based on the username
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+
+            if (user == null)
+            {
+                return Unauthorized("User not found.");
+            }
+
+            // Find the existing TodoItem
             var existingItem = await _context.TodoItems.FindAsync(id);
             if (existingItem == null)
             {
                 return NotFound();
             }
 
-            // Update only the fields that should be modified
+            // Ensure that the TodoItem belongs to the authenticated user
+            if (existingItem.UserId != user.Id)
+            {
+                return Forbid("You are not allowed to edit this task.");
+            }
+
+            // Update the fields that are allowed to be modified
             existingItem.Title = todoItem.Title;
             existingItem.IsCompleted = todoItem.IsCompleted;
 
@@ -105,7 +150,6 @@ namespace TodoApp.Controllers
 
             return NoContent();
         }
-
 
         // DELETE: api/TodoItems/5
         [HttpDelete("{id}")]
