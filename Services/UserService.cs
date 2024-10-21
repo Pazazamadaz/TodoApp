@@ -25,7 +25,7 @@ public class UserService : IUserService
 
     public async Task<string> Authenticate(string username, string password)
     {
-        var user = await _context.Users.SingleOrDefaultAsync(x => x.Username.ToLower() == username.ToLower());
+        var user = await _context.Users.SingleOrDefaultAsync(x => x.Username == username);
 
         if (user == null || !VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
         {
@@ -37,7 +37,7 @@ public class UserService : IUserService
 
     public async Task<User> Register(UserRegisterDto registrationDto)
     {
-        if (await _context.Users.AnyAsync(x => x.Username.ToLower() == registrationDto.Username.ToLower()))
+        if (await _context.Users.AnyAsync(x => x.Username == registrationDto.Username))
         {
             return null; // Username already taken
         }
