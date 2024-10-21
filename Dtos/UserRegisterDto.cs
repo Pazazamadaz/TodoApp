@@ -1,8 +1,9 @@
-﻿namespace TodoApp.Dtos
+﻿using Azure.Identity;
+
+namespace TodoApp.Dtos
 {
-    public class UserRegisterDto
+    public class UserRegisterDto : UserBaseDto
     {
-        public string Username { get; set; }
-        public string Password { get; set; }
+
     }
 }

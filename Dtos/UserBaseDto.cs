@@ -1,0 +1,9 @@
+﻿namespace TodoApp.Dtos
+{
+    public class UserBaseDto
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public string NormalisedUsername => Username.ToLower();
+    }
+}
