@@ -89,7 +89,6 @@ namespace TodoApp.Controllers
         }
 
         // PUT: api/TodoItems/5
-        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTodoItem(int id, TodoItem todoItem)
         {

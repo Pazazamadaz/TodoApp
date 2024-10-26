@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using TodoApp.Data;
+using TodoApp.Models;  // Assuming models are defined here
 
 namespace TodoApp.Controllers
 {
@@ -16,36 +17,48 @@ namespace TodoApp.Controllers
     {
         private readonly AppDbContext _context;
 
-        public AdminController(AppDbContext context) {
+        public AdminController(AppDbContext context)
+        {
             _context = context;
         }
 
-        // GET: api/Users
+        // GET: api/Admin
         [HttpGet]
-        public async Task<ActionResult<List<string>>> GetTodoItems()
+        public async Task<ActionResult<List<string>>> GetUsernames()
         {
-            // Extract the username from the JWT token
             var username = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
-
             if (string.IsNullOrEmpty(username))
             {
                 return Unauthorized("User information is missing.");
             }
 
-            // Retrieve the user based on the username
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-
             if (user == null)
             {
                 return Unauthorized("User not found.");
             }
 
-            // Filter TodoItems by the UserId
             var usernames = await _context.Users
-                                              .Select(_ => _.Username)
-                                              .ToListAsync();
+                                          .Select(u => u.Username)
+                                          .ToListAsync();
 
             return usernames;
+        }
+
+        // DELETE: api/Admin/{userId}
+        [HttpDelete("{userId}")]
+        public async Task<IActionResult> DeleteUser(int userId)
+        {
+            var userToDelete = await _context.Users.FindAsync(userId);
+            if (userToDelete == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            _context.Users.Remove(userToDelete);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }
