@@ -6,7 +6,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using TodoApp.Data;
-using TodoApp.Models;  // Assuming models are defined here
 
 namespace TodoApp.Controllers
 {
