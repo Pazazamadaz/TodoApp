@@ -45,10 +45,10 @@ namespace TodoApp.Controllers
         }
 
         // DELETE: api/Admin/{userId}
-        [HttpDelete("{userId}")]
-        public async Task<IActionResult> DeleteUser(int userId)
+        [HttpDelete("{username}")]
+        public async Task<IActionResult> DeleteUser(string username)
         {
-            var userToDelete = await _context.Users.FindAsync(userId);
+            var userToDelete = await _context.Users.FirstAsync(u => u.Username == username);
             if (userToDelete == null)
             {
                 return NotFound("User not found.");
