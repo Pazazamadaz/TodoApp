@@ -48,7 +48,7 @@ namespace TodoApp.Controllers
         [HttpDelete("{username}")]
         public async Task<IActionResult> DeleteUser(string username)
         {
-            var userToDelete = await _context.Users.FirstAsync(u => u.Username == username);
+            var userToDelete = await _context.Users.SingleOrDefaultAsync(u => u.Username == username);
             if (userToDelete == null)
             {
                 return NotFound("User not found.");
