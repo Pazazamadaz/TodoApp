@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using TodoApp.Data;
+using TodoApp.Dtos;
 
 namespace TodoApp.Controllers
 {
@@ -44,11 +45,15 @@ namespace TodoApp.Controllers
             return usernames;
         }
 
-        // DELETE: api/Admin/{userId}
-        [HttpDelete("{username}")]
-        public async Task<IActionResult> DeleteUser(string username)
+        [HttpDelete("delete")]
+        public async Task<IActionResult> DeleteUser([FromBody] UserDeleteDto request)
         {
-            var userToDelete = await _context.Users.SingleOrDefaultAsync(u => u.Username == username);
+            if (request == null || string.IsNullOrEmpty(request.Username))
+            {
+                return BadRequest("Username is required.");
+            }
+
+            var userToDelete = await _context.Users.SingleOrDefaultAsync(u => u.Username == request.Username);
             if (userToDelete == null)
             {
                 return NotFound("User not found.");
