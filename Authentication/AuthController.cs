@@ -33,11 +33,20 @@ namespace TodoApp.Authentication
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserRegisterDto registration)
         {
+            // Validate username format (A-Z, numbers, hyphen, no other characters)
+            if (string.IsNullOrWhiteSpace(registration.Username) ||
+                !System.Text.RegularExpressions.Regex.IsMatch(registration.Username, @"^[a-zA-Z0-9\-]+$"))
+            {
+                return BadRequest("Invalid username format.");
+            }
+
+            // Validate password is not empty
             if (string.IsNullOrWhiteSpace(registration.Password))
             {
                 return BadRequest("Password cannot be empty.");
             }
 
+            // Attempt to register the user
             var user = await _userService.Register(registration);
             if (user == null)
             {
