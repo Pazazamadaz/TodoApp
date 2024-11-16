@@ -53,16 +53,29 @@ namespace TodoApp.Controllers
                 return BadRequest("Username is required.");
             }
 
-            var userToDelete = await _context.Users.SingleOrDefaultAsync(u => u.Username == request.Username);
+            // Retrieve the user and their ID
+            var userToDelete = await _context.Users
+                .SingleOrDefaultAsync(u => u.Username == request.Username);
+
             if (userToDelete == null)
             {
                 return NotFound("User not found.");
             }
 
+            // Store the user's ID
+            var userId = userToDelete.Id;
+
+            // Delete the user
             _context.Users.Remove(userToDelete);
+
+            // Delete the user's todo items
+            var todoItemsToDelete = _context.TodoItems.Where(t => t.UserId == userId);
+            _context.TodoItems.RemoveRange(todoItemsToDelete);
+
+            // Save changes
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
     }
-}
+}   
