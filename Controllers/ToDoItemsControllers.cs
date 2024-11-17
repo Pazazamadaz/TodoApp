@@ -131,7 +131,7 @@ namespace TodoApp.Controllers
             // Update the fields that are allowed to be modified
             existingItem.Title = todoItem.Title;
             existingItem.IsCompleted = todoItem.IsCompleted;
-            existingItem.IsPriority = todoItem.IsPriority;
+            existingItem.IsPriority = todoItem.IsCompleted ? false : todoItem.IsPriority;
 
             try
             {
