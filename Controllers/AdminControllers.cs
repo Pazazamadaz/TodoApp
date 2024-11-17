@@ -10,7 +10,7 @@ using TodoApp.Dtos;
 
 namespace TodoApp.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Administrator")]
     [Route("api/[controller]")]
     [ApiController]
     public class AdminController : ControllerBase
