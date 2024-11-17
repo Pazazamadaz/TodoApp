@@ -77,7 +77,8 @@ namespace TodoApp.Controllers
             {
                 UserId = user.Id,
                 Title = todoItemNew.Title,
-                IsCompleted = todoItemNew.IsCompleted
+                IsCompleted = todoItemNew.IsCompleted,
+                IsPriority = todoItemNew.IsPriority,
             };
 
             // id is Identity column in the database... 
@@ -130,6 +131,7 @@ namespace TodoApp.Controllers
             // Update the fields that are allowed to be modified
             existingItem.Title = todoItem.Title;
             existingItem.IsCompleted = todoItem.IsCompleted;
+            existingItem.IsPriority = todoItem.IsPriority;
 
             try
             {
