@@ -35,7 +35,7 @@ namespace TodoApp.Authentication
         {
             // Validate username format (A-Z, numbers, hyphen, no other characters)
             if (string.IsNullOrWhiteSpace(registration.Username) ||
-                !System.Text.RegularExpressions.Regex.IsMatch(registration.Username, @"^[a-zA-Z0-9\-]+$"))
+                !System.Text.RegularExpressions.Regex.IsMatch(registration.Username, @"^(?=.*[a-zA-Z0-9\-])[a-zA-Z0-9\- ]+$"))
             {
                 return BadRequest("Invalid username format.");
             }
