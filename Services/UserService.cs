@@ -68,7 +68,7 @@ public class UserService : IUserService
             new Claim("UserId", user.Id.ToString())
         };
 
-        // Add "Administrator" permission if the user is an admin
+        // Add "Administrator" role if the user is an admin
         if (user.IsAdmin)
         {
             claims.Add(new Claim(ClaimTypes.Role, "Administrator"));
