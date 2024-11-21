@@ -9,6 +9,7 @@ namespace TodoApp.Data
 
         public DbSet<TodoItem> TodoItems { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<ColourTheme> ColourThemes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

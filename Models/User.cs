@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace TodoApp.Models
+﻿namespace TodoApp.Models
 {
     public class User
     {
