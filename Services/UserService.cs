@@ -4,9 +4,11 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using TodoApp.Data;
 using TodoApp.Dtos;
@@ -59,7 +61,6 @@ public class UserService : IUserService
         return user; // Return the newly created user
     }
 
-    // Method to generate JWT token
     public string GenerateJwtToken(User user)
     {
         var claims = new List<Claim>
@@ -72,6 +73,23 @@ public class UserService : IUserService
         if (user.IsAdmin)
         {
             claims.Add(new Claim(ClaimTypes.Role, "Administrator"));
+        }
+
+        // Add user's default colour theme
+        ColourTheme DefaultColourTheme = GetDefaultColourTheme(user);
+        if (DefaultColourTheme != null)
+        {
+            // Add the DefaultColourTheme as individual claims to avoid double encoding
+            claims.Add(new Claim("DefaultColourTheme.Name", DefaultColourTheme.Name ?? string.Empty));
+            claims.Add(new Claim("DefaultColourTheme.IsDefault", DefaultColourTheme.IsDefault.ToString()));
+            claims.Add(new Claim("DefaultColourTheme.SysDefined", DefaultColourTheme.SysDefined.ToString()));
+            claims.Add(new Claim("DefaultColourTheme.IsActive", DefaultColourTheme.IsActive.ToString()));
+
+            // Add Colours as individual claims (one for each colour)
+            foreach (var colour in DefaultColourTheme.Colours)
+            {
+                claims.Add(new Claim($"DefaultColourTheme.Colour.{colour.ColourProperty}", colour.ColourValue));
+            }
         }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"]));
@@ -112,5 +130,24 @@ public class UserService : IUserService
             }
         }
         return true;
+    }
+
+    private ColourTheme GetDefaultColourTheme(User user)
+    {
+        ColourTheme DefaultColourTheme = _context.ColourThemes
+            .Include(theme => theme.Colours)
+            .Where(theme => theme.UserId == user.Id)
+            .Where(theme => theme.IsDefault)
+            .FirstOrDefault();
+
+        if (DefaultColourTheme == null)
+        {
+            return _context.ColourThemes
+                .Include(theme => theme.Colours)
+                .Where(theme => theme.Name == "Default Theme")
+                .FirstOrDefault();
+        }
+
+        return DefaultColourTheme;
     }
 }
