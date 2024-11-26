@@ -138,6 +138,7 @@ public class UserService : IUserService
             .Include(theme => theme.Colours)
             .Where(theme => theme.UserId == user.Id)
             .Where(theme => theme.IsDefault)
+            .Where(theme => theme.IsActive)
             .FirstOrDefault();
 
         if (DefaultColourTheme == null)
