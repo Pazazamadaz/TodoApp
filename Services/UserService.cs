@@ -80,6 +80,7 @@ public class UserService : IUserService
         if (DefaultColourTheme != null)
         {
             // Add the DefaultColourTheme as individual claims to avoid double encoding
+            claims.Add(new Claim("DefaultColourTheme.Id", DefaultColourTheme.Id.ToString()));
             claims.Add(new Claim("DefaultColourTheme.Name", DefaultColourTheme.Name ?? string.Empty));
             claims.Add(new Claim("DefaultColourTheme.IsDefault", DefaultColourTheme.IsDefault.ToString()));
             claims.Add(new Claim("DefaultColourTheme.SysDefined", DefaultColourTheme.SysDefined.ToString()));

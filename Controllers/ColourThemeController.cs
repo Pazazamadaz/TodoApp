@@ -60,8 +60,8 @@ namespace TodoApp.Controllers
             return CreatedAtAction("GetColourTheme", new { id = colourTheme.Id }, colourTheme);
         }
 
-        // PUT: api/ColourTheme/5
-        [HttpPut("{id}")]
+        // PUT: api/ColourTheme
+        [HttpPut()]
         public async Task<IActionResult> PutColourTheme([FromBody] ColourTheme colourTheme)
         {
 
