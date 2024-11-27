@@ -89,7 +89,8 @@ public class UserService : IUserService
             // Add Colours as individual claims (one for each colour)
             foreach (var colour in DefaultColourTheme.Colours)
             {
-                claims.Add(new Claim($"DefaultColourTheme.Colour.{colour.ColourProperty}", colour.ColourValue));
+                var serializedValue = $"{colour.ColourValue}:{colour.ColourThemeId}";
+                claims.Add(new Claim($"DefaultColourTheme.Colour.{colour.ColourProperty}", serializedValue));
             }
         }
 

@@ -65,14 +65,12 @@ namespace TodoApp.Controllers
         public async Task<IActionResult> PutColourTheme([FromBody] ColourTheme colourTheme)
         {
 
-            var existingTheme = await _context.ColourThemes.FindAsync(colourTheme.Id);
-            if (existingTheme == null)
-            {
-                return NotFound();
-            }
+            var existingTheme = await _context.ColourThemes
+                .Include(theme => theme.Colours)
+                .FirstOrDefaultAsync(theme => theme.Id == colourTheme.Id);
 
             // Only allow updates for themes the user owns
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue("UserId");
             if (existingTheme.UserId.ToString() != userId || existingTheme.SysDefined)
             {
                 return Forbid("Unauthorised");
