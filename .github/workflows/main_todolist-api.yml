@@ -19,13 +19,13 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Restore dependencies for API project
-        run: dotnet restore TodoApp/TodoApp.csproj
+        run: dotnet restore TodoApp.csproj
 
       - name: Build API project
-        run: dotnet build TodoApp/TodoApp.csproj --configuration Release
+        run: dotnet build TodoApp.csproj --configuration Release
 
       - name: Publish API project
-        run: dotnet publish TodoApp/TodoApp.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+        run: dotnet publish TodoApp.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
