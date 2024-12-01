@@ -8,7 +8,7 @@ namespace TodoApp.Models
         public required string Name { get; set; }
         public required List<Colour> Colours { get; set; } = new List<Colour>();
         public int? UserId { get; set; }
-        public bool SysDefined { get; set; } = false;
+        public bool SystemDefined { get; set; } = false;
         public bool IsDefault { get; set; }
         public bool IsActive { get; set; }
     }

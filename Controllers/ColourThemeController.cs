@@ -71,7 +71,7 @@ namespace TodoApp.Controllers
 
             // Only allow updates for themes the user owns
             var userId = User.FindFirstValue("UserId");
-            if (existingTheme.UserId.ToString() != userId || existingTheme.SysDefined)
+            if (existingTheme.UserId.ToString() != userId || existingTheme.SystemDefined)
             {
                 return Forbid("Unauthorised");
             }
@@ -79,7 +79,7 @@ namespace TodoApp.Controllers
             existingTheme.Name = colourTheme.Name;
             existingTheme.Colours = colourTheme.Colours;
             existingTheme.IsDefault = colourTheme.IsDefault;
-            existingTheme.SysDefined = colourTheme.SysDefined;
+            existingTheme.SystemDefined = colourTheme.SystemDefined;
             existingTheme.UserId = existingTheme.UserId;
             existingTheme.IsActive = colourTheme.IsActive;
 
@@ -100,7 +100,7 @@ namespace TodoApp.Controllers
 
             // Only allow deletion for themes the user owns
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (colourTheme.UserId.ToString() != userId && colourTheme.SysDefined)
+            if (colourTheme.UserId.ToString() != userId && colourTheme.SystemDefined)
             {
                 return Forbid("Cannot delete system-defined themes.");
             }

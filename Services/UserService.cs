@@ -82,9 +82,9 @@ public class UserService : IUserService
             // Add the DefaultColourTheme as individual claims to avoid double encoding
             claims.Add(new Claim("DefaultColourTheme.Id", DefaultColourTheme.Id.ToString()));
             claims.Add(new Claim("DefaultColourTheme.Name", DefaultColourTheme.Name ?? string.Empty));
-            claims.Add(new Claim("DefaultColourTheme.IsDefault", DefaultColourTheme.IsDefault.ToString()));
-            claims.Add(new Claim("DefaultColourTheme.SysDefined", DefaultColourTheme.SysDefined.ToString()));
-            claims.Add(new Claim("DefaultColourTheme.IsActive", DefaultColourTheme.IsActive.ToString()));
+            claims.Add(new Claim("DefaultColourTheme.IsDefault", DefaultColourTheme.IsDefault.ToString().ToLower()));
+            claims.Add(new Claim("DefaultColourTheme.SystemDefined", DefaultColourTheme.SystemDefined.ToString().ToLower()));
+            claims.Add(new Claim("DefaultColourTheme.IsActive", DefaultColourTheme.IsActive.ToString().ToLower()));
 
             // Add Colours as individual claims (one for each colour)
             foreach (var colour in DefaultColourTheme.Colours)
