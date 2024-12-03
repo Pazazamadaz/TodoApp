@@ -31,7 +31,6 @@ namespace TodoApp.Authentication
             _secretKey = jwtSettings["SecretKey"];
         }
 
-        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserRegisterDto registration)
         {
@@ -58,7 +57,6 @@ namespace TodoApp.Authentication
             return Ok("User registered successfully");
         }
 
-        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDto login)
         {
