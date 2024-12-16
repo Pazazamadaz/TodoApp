@@ -2,7 +2,7 @@
 
 namespace TodoApp.Dtos
 {
-    public class UserRegisterDto : UserBaseDto
+    public class UserRegisterDto : UserLoginDto
     {
 
     }

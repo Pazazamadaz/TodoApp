@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using TodoApp.Data;
 using TodoApp.Dtos;
+using TodoApp.Models;
 
 namespace TodoApp.Controllers
 {
@@ -24,7 +25,7 @@ namespace TodoApp.Controllers
 
         // GET: api/Admin
         [HttpGet]
-        public async Task<ActionResult<List<string>>> GetUsernames()
+        public async Task<ActionResult<List<UserBaseDto>>> GetUsernames()
         {
             var username = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(username))
@@ -39,10 +40,14 @@ namespace TodoApp.Controllers
             }
 
             var usernames = await _context.Users
-                                          .Select(u => u.Username)
-                                          .ToListAsync();
+                .Select(u => new UserBaseDto
+                {
+                    Username = u.Username,
+                    IsAdmin = u.IsAdmin
+                })
+                .ToListAsync();
 
-            return usernames;
+            return Ok(usernames);
         }
 
         [HttpDelete("delete")]
@@ -77,5 +82,37 @@ namespace TodoApp.Controllers
 
             return NoContent();
         }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateUser(UserUpdateDto updateUserDto)
+        {
+            if (string.IsNullOrWhiteSpace(updateUserDto.Username))
+            {
+                return BadRequest("New username is required.");
+            }
+
+            // Find the user by ID
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == updateUserDto.Id);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            // Update user details
+            user.Username = updateUserDto.Username;
+            user.IsAdmin = updateUserDto.IsAdmin;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return Conflict("A concurrency issue occurred. Please try again.");
+            }
+
+            return Ok();
+        }
+
     }
 }   

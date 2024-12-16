@@ -69,8 +69,11 @@ namespace TodoApp.Controllers
                 .Include(theme => theme.Colours)
                 .FirstOrDefaultAsync(theme => theme.Id == colourTheme.Id);
 
+            if (existingTheme == null)
+                return NotFound();
+
             // Only allow updates for themes the user owns
-            var userId = User.FindFirstValue("UserId");
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (existingTheme.UserId.ToString() != userId || existingTheme.SystemDefined)
             {
                 return Forbid("Unauthorised");
