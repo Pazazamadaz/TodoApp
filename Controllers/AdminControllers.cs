@@ -83,8 +83,8 @@ namespace TodoApp.Controllers
             return NoContent();
         }
 
-        [HttpPut]
-        public async Task<IActionResult> UpdateUser(UserUpdateDto updateUserDto)
+        [HttpPut("update")]
+        public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDto updateUserDto)
         {
             if (string.IsNullOrWhiteSpace(updateUserDto.Username))
             {
