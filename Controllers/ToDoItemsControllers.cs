@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using TodoApp.Data;
+using TodoApp.Dtos;
 using TodoApp.Models;
 
 namespace TodoApp.Controllers
@@ -66,7 +67,7 @@ namespace TodoApp.Controllers
 
         // POST: api/TodoItems
         [HttpPost]
-        public async Task<ActionResult<TodoItem>> PostTodoItem(TodoItemNew todoItemNew)
+        public async Task<ActionResult<TodoItem>> PostTodoItem(TodoItemNewDto todoItemNew)
         {
             // Retreive user id
             User user = _context.Users
