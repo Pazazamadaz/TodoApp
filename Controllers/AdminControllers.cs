@@ -84,7 +84,7 @@ namespace TodoApp.Controllers
         }
 
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDto updateUserDto)
+        public async Task<IActionResult> UpdateUser([FromBody] UserBaseDto updateUserDto)
         {
             if (string.IsNullOrWhiteSpace(updateUserDto.Username))
             {
@@ -92,11 +92,12 @@ namespace TodoApp.Controllers
             }
 
             // Find the user by ID
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == updateUserDto.Id);
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Username.ToLower() == updateUserDto.Username.ToLower());
             if (user == null)
             {
                 return NotFound("User not found.");
-            }
+            }   
 
             // Update user details
             user.Username = updateUserDto.Username;

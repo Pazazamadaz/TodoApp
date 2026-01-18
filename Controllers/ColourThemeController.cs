@@ -47,7 +47,7 @@ namespace TodoApp.Controllers
         public async Task<ActionResult<ColourTheme>> PostColourTheme(ColourTheme colourTheme)
         {
             // Associate the user ID with the theme
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue("UserId");
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized("User information is missing.");
@@ -73,7 +73,7 @@ namespace TodoApp.Controllers
                 return NotFound();
 
             // Only allow updates for themes the user owns
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue("UserId");
             if (existingTheme.UserId.ToString() != userId || existingTheme.SystemDefined)
             {
                 return Forbid("Unauthorised");
@@ -102,7 +102,7 @@ namespace TodoApp.Controllers
             }
 
             // Only allow deletion for themes the user owns
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue("UserId");
             if (colourTheme.UserId.ToString() != userId && colourTheme.SystemDefined)
             {
                 return Forbid("Cannot delete system-defined themes.");
